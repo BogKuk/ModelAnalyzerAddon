@@ -1,10 +1,12 @@
 import bpy
 
+from analyzer import utils
+
 class OBJECT_OT_analyzer(bpy.types.Operator):
     bl_idname = "object.analyzer"
     bl_label = "Проверить модель"
     bl_description = "Проверяет качество и избыточность детализации текущего объекта"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER'}
 
     def execute(self, context):
         obj = context.active_object
@@ -14,8 +16,7 @@ class OBJECT_OT_analyzer(bpy.types.Operator):
 
         mesh = obj.data
         poly_count = len(mesh.polygons)
-        bbox = obj.dimensions
-        density = poly_count / (bbox.x * bbox.y * bbox.z) if bbox.x * bbox.y * bbox.z > 0 else 0
+        density = utils.calculate_poly_density(obj)
 
         self.report({'INFO'}, f"Полигоны: {poly_count}, Плотность: {density:.2f}")
         return {'FINISHED'}
