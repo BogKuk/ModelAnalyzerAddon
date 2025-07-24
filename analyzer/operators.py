@@ -1,6 +1,8 @@
 import bpy
+import bmesh
 
-from analyzer import utils, props
+from analyzer import utils
+
 
 class OBJECT_OT_analyzer(bpy.types.Operator):
     bl_idname = "object.analyzer"
@@ -12,7 +14,7 @@ class OBJECT_OT_analyzer(bpy.types.Operator):
         obj = context.active_object
         utils.object_check(self, obj)
 
-        utils.edit_mode_select(obj)
+        utils.mode_select(obj,'EDIT')
 
         mesh = obj.data
         context.scene.poly_count = len(mesh.polygons)
@@ -30,10 +32,54 @@ class OBJECT_OT_CheckNonManifold(bpy.types.Operator):
         obj = context.active_object
         utils.object_check(self, obj)
 
-        utils.edit_mode_select(obj)
+        utils.mode_select(obj, 'EDIT')
 
-        non_manifold_edges = utils.remove_non_manifold_edges(obj)
+        bm = bmesh.from_edit_mesh(obj.data)
+        bm.normal_update()
+
+        for v in bm.verts:
+            v.select = False
+        for e in bm.edges:
+            e.select = False
+        for f in bm.faces:
+            f.select = False
+
+        non_manifold_edges = [e for e in bm.edges if not e.is_manifold]
+
+        for e in non_manifold_edges:
+            e.select = True
+            for v in e.verts:
+                v.select = True
+
+        bmesh.update_edit_mesh(obj.data)
+
+        non_manifold_edges = len(non_manifold_edges)
         context.scene.non_manifold_report = f"Non-manifold рёбер: {non_manifold_edges}"
 
         self.report({'INFO'}, "Анализ non-manifold рёбер завершен")
+        return {'FINISHED'}
+
+class OBJECT_OT_fix_inverted_normals(bpy.types.Operator):
+    bl_idname = "object.fix_inverted_normals"
+    bl_label = "Исправить перевернутые нормали"
+    bl_description = "Исправляет перевернутые нормали на активном объекте"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        obj = context.active_object
+        utils.object_check(self, obj)
+
+        utils.mode_select(obj, 'OBJECT')
+
+        me = obj.data
+
+        bm = bmesh.new()
+        bm.from_mesh(me)
+        bm.normal_update()
+
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        bm.to_mesh(me)
+        bm.free()
+
+        self.report({'INFO'}, "Анализ нормалей завершен.")
         return {'FINISHED'}

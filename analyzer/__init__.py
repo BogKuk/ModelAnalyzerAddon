@@ -10,13 +10,14 @@ bl_info = {
 
 import bpy
 
-from .operators import OBJECT_OT_analyzer, OBJECT_OT_CheckNonManifold
+from .operators import OBJECT_OT_analyzer, OBJECT_OT_CheckNonManifold, OBJECT_OT_fix_inverted_normals
 from .panel import VIEW3D_PT_analyzer_panel
 from .props import register_props, unregister_props
 
 classes = (
     OBJECT_OT_analyzer,
     OBJECT_OT_CheckNonManifold,
+    OBJECT_OT_fix_inverted_normals,
     VIEW3D_PT_analyzer_panel,
 )
 
