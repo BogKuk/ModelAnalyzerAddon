@@ -10,21 +10,25 @@ bl_info = {
 
 import bpy
 
-from .operators import OBJECT_OT_analyzer
+from .operators import OBJECT_OT_analyzer, OBJECT_OT_CheckNonManifold
 from .panel import VIEW3D_PT_analyzer_panel
+from .props import register_props, unregister_props
 
 classes = (
     OBJECT_OT_analyzer,
+    OBJECT_OT_CheckNonManifold,
     VIEW3D_PT_analyzer_panel,
 )
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
+    register_props()
 
 def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
+    unregister_props()
 
 if __name__ == "__main__":
     register()
