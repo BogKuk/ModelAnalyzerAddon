@@ -16,17 +16,17 @@ def register_props():
     )
     bpy.types.Scene.overdetail_threshold_hero = FloatProperty(
         name="Hero Threshold",
-        default=1500,
+        default=3000,
         description="Max tris per square meter for hero meshes"
     )
     bpy.types.Scene.overdetail_threshold_prop = FloatProperty(
         name="Prop Threshold",
-        default=800,
+        default=1000,
         description="Max tris per square meter for props"
     )
     bpy.types.Scene.overdetail_threshold_background = FloatProperty(
         name="Background Threshold",
-        default=300,
+        default=500,
         description="Max tris per square meter for background"
     )
     bpy.types.Scene.overdetail_report = bpy.props.StringProperty(
