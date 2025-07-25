@@ -7,7 +7,7 @@ from analyzer import utils
 class OBJECT_OT_analyzer(bpy.types.Operator):
     bl_idname = "object.analyzer"
     bl_label = "Общий анализ"
-    bl_description = "Проверяет кол-во полигонов и их плотность"
+    bl_description = "Проверяет кол-во полигонов и их плотность, проводит контекстный анализ"
     bl_options = {'REGISTER'}
 
     def execute(self, context):
@@ -17,10 +17,33 @@ class OBJECT_OT_analyzer(bpy.types.Operator):
         utils.mode_select(obj,'EDIT')
 
         mesh = obj.data
-        context.scene.poly_count = len(mesh.polygons)
-        context.scene.poly_density = utils.calculate_poly_density(obj)
 
-        self.report({'INFO'}, "Базовый анализ завершен")
+        density = utils.calculate_poly_density(obj)
+        poly_count = len(mesh.polygons)
+
+        thresh = {
+            'HERO': context.scene.overdetail_threshold_hero,
+            'PROP': context.scene.overdetail_threshold_prop,
+            'BACKGROUND': context.scene.overdetail_threshold_background,
+        }[context.scene.overdetail_context]
+
+        is_overdetailed = density > thresh
+
+        result = {
+            "poly_count": poly_count,
+            "density": density,
+            "threshold": thresh,
+            "overdetail": is_overdetailed
+        }
+
+        context.scene.overdetail_report = (
+                f"Контекст: {context.scene.overdetail_context}\n"
+                f"Кол-во полигонов: {result['poly_count']}\n"
+                f"Плотность: {result['density']:.1f} pols/m² (thr: {result['threshold']:.1f})\n"
+                + ("⚠️ Over-detailed" if result['overdetail'] else "✔ OK")
+        )
+
+        self.report({'INFO'}, "Контекстный Анализ завершен")
         return {'FINISHED'}
 
 class OBJECT_OT_CheckNonManifold(bpy.types.Operator):
